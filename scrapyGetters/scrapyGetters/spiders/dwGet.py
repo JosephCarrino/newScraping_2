@@ -11,12 +11,14 @@ import json
 SCRIPTS_DIR = path.dirname(__file__)
 PROJ_DIR = f"{SCRIPTS_DIR}/../../../"
 BASE_URL = f"www.spiegel.de"
-RSS_URL = f"https://www.spiegel.de/ausland/index.rss"
+RSS_URLS = [f"https://www.spiegel.de/ausland/index.rss",
+           f"https://www.spiegel.de/sport/index.rss",
+           f"https://www.spiegel.de/wirtschaft/index.rss"]
 
 class DwgetSpider(scrapy.Spider):
     name = 'dwGet'
     allowed_domains = [BASE_URL]
-    start_urls = [RSS_URL]
+    start_urls = RSS_URLS
 
     def dateFormatter(self, dates_raw):
         dates= []
@@ -56,6 +58,11 @@ class DwgetSpider(scrapy.Spider):
     def getFullContent(self, response):
         fullcont= response.css(".RichText").css("p::text").getall()
         content= ''.join(fullcont)
+        placed = 'Abroad'
+        if "sport" in response.meta.get('oldurl'):
+            placed = "Sports"
+        elif "wirtschaft" in response.meta.get('oldurl'):
+            placed = "Economy"
 
         item = response.meta.get('data')
         scraped_info = {
@@ -67,7 +74,7 @@ class DwgetSpider(scrapy.Spider):
                 'subtitle': item[4],
                 'content': content,
                 'ranked': response.meta.get('currelem'),
-                'placed': 'Abroad',
+                'placed': placed,
                 'epoch': time.time(),
                 'language': 'DE',
                 'source': "Spiegel"

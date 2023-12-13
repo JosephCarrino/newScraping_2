@@ -11,12 +11,14 @@ import json
 SCRIPTS_DIR = path.dirname(__file__)
 PROJ_DIR = f"{SCRIPTS_DIR}/../../../"
 BASE_URL = f"www.abc.es"
-RSS_URL = f"https://{BASE_URL}/rss/feeds/abc_Internacional.xml"
+RSS_URLS = [f"https://{BASE_URL}/rss/2.0/internacional/",
+            f"https://{BASE_URL}/rss/2.0/deportes/",
+            f"https://{BASE_URL}/rss/2.0/economia/"]
 
 class AbcgetSpider(scrapy.Spider):
     name = 'abcGet'
     allowed_domains = [BASE_URL]
-    start_urls = [RSS_URL]
+    start_urls = RSS_URLS
 
     def dateFormatter(self, dates_raw):
         dates= []
@@ -69,6 +71,11 @@ class AbcgetSpider(scrapy.Spider):
     def getFullContent(self, response):
         fullcont = response.css(".cuerpo-texto").css("p::text").getall()
         content= ''.join(fullcont)
+        placed = 'Abroad'
+        if 'deportes' in response.meta.get('oldurl'):
+            placed = 'Sports'
+        elif 'economia' in response.meta.get('oldurl'):
+            placed = 'Economy'
 
         item = response.meta.get('data')
         scraped_info = {
@@ -80,7 +87,7 @@ class AbcgetSpider(scrapy.Spider):
                 'subtitle': item[4],
                 'content': content,
                 'ranked': response.meta.get('currelem'),
-                'placed': 'Abroad',
+                'placed': placed,
                 'epoch': time.time(),
                 'language': 'ES',
                 'source': "ABC"

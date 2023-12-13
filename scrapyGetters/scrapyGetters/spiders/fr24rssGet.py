@@ -11,13 +11,15 @@ import json
 SCRIPTS_DIR = path.dirname(__file__)
 PROJ_DIR = f"{SCRIPTS_DIR}/../../../"
 BASE_URL = f"www.france24.com"
-RSS_URL = f"https://www.france24.com/fr/planete/rss"
+RSS_URLS = [f"https://www.france24.com/fr/rss",
+            f"https://www.france24.com/fr/economie/rss",
+            f"https://www.france24.com/fr/sports/rss"]
 
 
 class Fr24rssgetSpider(scrapy.Spider):
     name = 'fr24rssGet'
     allowed_domains = [BASE_URL]
-    start_urls = [RSS_URL]
+    start_urls = RSS_URLS
 
     def dateFormatter(self, dates_raw):
         dates= []
@@ -57,6 +59,11 @@ class Fr24rssgetSpider(scrapy.Spider):
     def getFullContent(self, response):
         fullcont= response.css(".t-content__body").css("p::text").getall()
         content= ''.join(fullcont)
+        placed = "Abroad"
+        if "tech" in response.meta.get('oldurl'):
+            placed = "Economy"
+        elif "sports" in response.meta.get('oldurl'):
+            placed = "Sports"
 
         item = response.meta.get('data')
         scraped_info = {
@@ -68,7 +75,7 @@ class Fr24rssgetSpider(scrapy.Spider):
                 'subtitle': item[4],
                 'content': content,
                 'ranked': response.meta.get('currelem'),
-                'placed': 'Abroad',
+                'placed': placed,
                 'epoch': time.time(),
                 'language': 'FR',
                 'source': "France24"
@@ -84,7 +91,7 @@ class Fr24rssgetSpider(scrapy.Spider):
             base_name = f"{now_s}E{now_epoch}.json"
             scraped_data_dir = f"{PROJ_DIR}/collectedNews/flow/FR/France24"
             scraped_data_filepath = f"{scraped_data_dir}/{base_name}"
-            with open(scraped_data_filepath, "w") as f:
+            with open(scraped_data_filepath, "w", encoding="utf-8") as f:
                 json.dump(response.meta.get('edition'), f, indent= 4, ensure_ascii=False)
                 f.write("\n")
     

@@ -10,18 +10,12 @@ import json
 import os
 import errno
 
-NOW = datetime.now()
-NOW_S = NOW.strftime("%Y-%m-%dT%H.%M.%S")
-NOW_EPOCH = (NOW - datetime(1970, 1, 1)) / timedelta(seconds=1)
-BASE_NAME = f"{NOW_S}E{NOW_EPOCH}.json"
-
 SCRIPTS_DIR = path.dirname(__file__)
 PROJ_DIR = f"{SCRIPTS_DIR}/../../../"
 BASE_URL = f"www.ansa.it"
 RSS_URLS = ["https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml", 
-            "https://www.ansa.it/sito/notizie/cronaca/cronaca_rss.xml",
-            "https://www.ansa.it/sito/notizie/politica/politica_rss.xml",
-        ]
+            "https://www.ansa.it/sito/notizie/economia/economia_rss.xml",
+            "https://www.ansa.it/sito/notizie/sport/sport_rss.xml"]
 
 CATE_DICT = {"https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml": "Esteri",
              "https://www.ansa.it/sito/notizie/cronaca/cronaca_rss.xml": "Cronaca",
@@ -78,6 +72,11 @@ class AnsagetSpider(scrapy.Spider):
     def getFullContent(self, response):
         fullcont = response.css(".news-txt").css("p::text").getall()
         content= ''.join(fullcont)
+        placed = "Abroad"
+        if "sport" in response.meta.get('oldurl'):
+            placed = "Sports"
+        elif "economia" in response.meta.get('oldurl'):
+            placed = "Economy"
 
         item = response.meta.get('data')
         scraped_info = {
@@ -89,7 +88,7 @@ class AnsagetSpider(scrapy.Spider):
             'subtitle': item[4],
             'content': content,
             'ranked': response.meta.get('currelem'),
-            'placed': CATE_DICT[response.meta.get('oldurl')],
+            'placed': placed,
             'epoch': time.time(),
             'language': 'IT',
             'source': 'ANSA'
@@ -98,8 +97,11 @@ class AnsagetSpider(scrapy.Spider):
         response.meta.get('edition').append(scraped_info)
 
         if response.meta.get('currelem') == len(item):
-            scraped_data_dir = f"{PROJ_DIR}/collectedNews/flow/IT/ANSA_{CATE_DICT[response.meta.get('oldurl')]}"
-            global BASE_NAME
+            scraped_data_dir = f"{PROJ_DIR}/collectedNews/flow/IT/ANSA"
+            NOW = datetime.now()
+            NOW_S = NOW.strftime("%Y-%m-%dT%H.%M.%S")
+            NOW_EPOCH = (NOW - datetime(1970, 1, 1)) / timedelta(seconds=1)
+            BASE_NAME = f"{NOW_S}E{NOW_EPOCH}.json"
             scraped_data_filepath = f"{scraped_data_dir}/{BASE_NAME}"
             if not os.path.exists(os.path.dirname(scraped_data_filepath)):
                 try:

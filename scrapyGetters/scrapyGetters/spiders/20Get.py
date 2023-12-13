@@ -8,7 +8,7 @@ import time
 from os import path
 import json
 from scrapy.crawler import CrawlerProcess
-import vcr
+# import vcr
 from urllib.request import urlopen
 
 SCRIPTS_DIR = path.dirname(__file__)
