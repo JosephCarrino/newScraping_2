@@ -1,0 +1,12 @@
+# Python cache files
+*.pyc
+
+#Jupyter Directory
+
+.ipynb_checkpoints/
+
+#API Keys
+keys/*.txt
+
+# PyCharm settings
+.idea/
