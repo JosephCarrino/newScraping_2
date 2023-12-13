@@ -9,7 +9,7 @@ scrapy crawl abcGet
 scrapy crawl fr24rssGet
 # scrapy crawl agiGet
 scrapy crawl ansaGet
-cd ../../..
-git add .
-git commit -m "checkout"
-git push origin main
+#cd ../../..
+#git add .
+#git commit -m "checkout"
+#git push origin main

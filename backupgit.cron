@@ -1,0 +1,3 @@
+cd /home/projects/scraping2021/newScraping_2 && . venv/bin/activate &&
+cd /home/projects/scraping2021/newScraping_2/scrapyGetters/scrapyGetters/spiders && bash flowscrape.sh &&
+cd /home/projects/scraping2021/newScraping_2 && git add . && git commit -m "Auto-Commit" && git push origin main
